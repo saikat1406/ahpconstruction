@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AHP Factor Comparison</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.4/math.js"></script>
+    <script>
+        function calculateAHP() {
+            let factors = [
+                "Worker Safety Index (%)", "PPE Compliance", "Accident Rates", "Emergency Training Frequency",
+                "Medical Help Availability", "Wage & Financial Stability Index (%)", "Salary Delays",
+                "Overtime Pay Compliance", "Minimum Wage Adherence", "Legal Compliance Score (%)",
+                "Work Permits & Legal Docs", "Labor Law Violations", "Government Inspections",
+                "Living Conditions & Social Support Index (%)", "Housing Quality", "Healthcare Access",
+                "Grievance Mechanisms", "Psychological & Social Well-Being Index (%)", "Community Integration Programs",
+                "Mental Health Services", "Worker Satisfaction"
+            ];
+            
+            let matrix = [];
+            for (let i = 0; i < factors.length; i++) {
+                matrix[i] = [];
+                for (let j = 0; j < factors.length; j++) {
+                    if (i === j) {
+                        matrix[i][j] = 1;
+                    } else {
+                        let value = parseFloat(document.getElementById(`factor_${i}_${j}`).value) || 1;
+                        matrix[i][j] = value;
+                        matrix[j][i] = 1 / value;
+                    }
+                }
+            }
+            
+            let sumCols = new Array(factors.length).fill(0);
+            for (let j = 0; j < factors.length; j++) {
+                for (let i = 0; i < factors.length; i++) {
+                    sumCols[j] += matrix[i][j];
+                }
+            }
+            
+            let normalizedMatrix = matrix.map((row, i) => row.map((val, j) => val / sumCols[j]));
+            let weights = normalizedMatrix.map(row => row.reduce((a, b) => a + b, 0) / factors.length);
+            
+            let resultHtml = "<h3>AHP Weights:</h3><ul>";
+            for (let i = 0; i < factors.length; i++) {
+                resultHtml += `<li>${factors[i]}: ${weights[i].toFixed(4)}</li>`;
+            }
+            resultHtml += "</ul>";
+            document.getElementById("results").innerHTML = resultHtml;
+        }
+    </script>
+</head>
+<body>
+    <h2>AHP Factor Comparison</h2>
+    <p>Enter pairwise comparison values:</p>
+    <div id="comparisonInputs"></div>
+    <button onclick="calculateAHP()">Calculate AHP</button>
+    <div id="results"></div>
+    
+    <script>
+        let factors = [
+            "Worker Safety Index (%)", "Wage & Financial Stability Index (%)", "Legal Compliance Score (%)",
+            "Living Conditions & Social Support Index (%)", "Psychological & Social Well-Being Index (%)"
+        ];
+        
+        let subFactors = {
+            "Worker Safety Index (%)": ["PPE Compliance", "Accident Rates", "Emergency Training Frequency", "Medical Help Availability"],
+            "Wage & Financial Stability Index (%)": ["Salary Delays", "Overtime Pay Compliance", "Minimum Wage Adherence"],
+            "Legal Compliance Score (%)": ["Work Permits & Legal Docs", "Labor Law Violations", "Government Inspections"],
+            "Living Conditions & Social Support Index (%)": ["Housing Quality", "Healthcare Access", "Grievance Mechanisms"],
+            "Psychological & Social Well-Being Index (%)": ["Community Integration Programs", "Mental Health Services", "Worker Satisfaction"]
+        };
+        
+        let inputHtml = "";
+        for (let i = 0; i < factors.length; i++) {
+            for (let j = i + 1; j < factors.length; j++) {
+                inputHtml += `<label>${factors[i]} vs ${factors[j]}: <input type='number' step='0.1' id='factor_${i}_${j}' value='1'></label><br>`;
+            }
+        }
+        document.getElementById("comparisonInputs").innerHTML = inputHtml;
+    </script>
+</body>
+</html>
